@@ -1,0 +1,29 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: error-free-text
+  jackson:
+    deserialization:
+      fail-on-numbers-for-enums: true
+      fail-on-trailing-tokens: true
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/error_free_text
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yml
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    com.senla.errorfreetext: ${APP_LOG_LEVEL:INFO}
+  pattern:
+    level: "%5p [requestId=%X{requestId:-}]"
+
+app:
+  scheduler-delay-ms: ${SCHEDULER_DELAY_MS:2000}
+  yandex-url: https://speller.yandex.net/services/spellservice.json

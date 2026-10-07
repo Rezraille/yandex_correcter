@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-text-correction-created-at
+      author: mamukelashvili.n
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE text_correction
+                  ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+              CREATE INDEX idx_text_correction_created_at
+                  ON text_correction(created_at, id);
+      rollback:
+        - sql:
+            sql: |
+              DROP INDEX idx_text_correction_created_at;
+              ALTER TABLE text_correction DROP COLUMN created_at;

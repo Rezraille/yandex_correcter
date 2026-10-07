@@ -1,0 +1,74 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-text-correction-tables
+      author: mamukelashvili.n
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE text_correction (
+                  id UUID NOT NULL,
+                  language VARCHAR(10) NOT NULL,
+                  text TEXT NOT NULL,
+                  corrected_text TEXT,
+
+                  CONSTRAINT pk_text_correction
+                      PRIMARY KEY (id),
+
+                  CONSTRAINT chk_text_correction_language
+                      CHECK (language IN ('RU', 'EN'))
+              );
+
+              CREATE TABLE text_status (
+                  correction_id UUID NOT NULL,
+                  status VARCHAR(20) NOT NULL,
+                  error_message VARCHAR(256),
+                  processing_started_at TIMESTAMPTZ,
+
+                  CONSTRAINT pk_text_status
+                      PRIMARY KEY (correction_id),
+
+                  CONSTRAINT fk_text_status_correction
+                      FOREIGN KEY (correction_id)
+                      REFERENCES text_correction (id)
+                      ON DELETE CASCADE,
+
+                  CONSTRAINT chk_text_status
+                      CHECK (status IN ('NEW', 'PROCESSING', 'COMPLETED', 'ERROR'))
+              );
+
+              CREATE INDEX idx_text_status
+                  ON text_status(status);
+
+              CREATE TABLE text_chunk (
+                  id UUID NOT NULL,
+                  correction_id UUID NOT NULL,
+                  chunk_index INTEGER NOT NULL,
+                  start_position INTEGER NOT NULL,
+                  end_position INTEGER NOT NULL,
+                  corrected_text TEXT,
+                  status VARCHAR(20) NOT NULL,
+                  processing_started_at TIMESTAMPTZ,
+
+                  CONSTRAINT pk_text_chunk
+                      PRIMARY KEY (id),
+
+                  CONSTRAINT uq_text_chunk
+                      UNIQUE (correction_id, chunk_index),
+
+                  CONSTRAINT fk_text_chunk_correction
+                      FOREIGN KEY (correction_id)
+                      REFERENCES text_correction (id)
+                      ON DELETE CASCADE,
+
+                  CONSTRAINT chk_text_chunk_status
+                      CHECK (status IN ('NEW', 'PROCESSING', 'COMPLETED', 'ERROR')),
+
+                  CONSTRAINT chk_text_chunk_positions
+                      CHECK (start_position >= 0 AND end_position > start_position),
+
+                  CONSTRAINT chk_text_chunk_index
+                      CHECK (chunk_index >= 0)
+              );
+
+              CREATE INDEX idx_text_chunk_status
+                  ON text_chunk(status);

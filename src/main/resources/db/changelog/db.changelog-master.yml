@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: 202610061211/create_text_correction_tables.yml
+      relativeToChangelogFile: true
+  - include:
+      file: 202610071500/add_text_correction_created_at.yml
+      relativeToChangelogFile: true
